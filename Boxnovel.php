@@ -9,7 +9,9 @@ class Boxnovel extends MadaraCore
 {
     public $list_url = "https://boxnovel.com/";
     public $referer = "https://boxnovel.com/";
-
+    public $proxy = false;
+    public $chapter_type = 'text';
+    
     function info($url)
     {
         $html = $this->minifier($this->curl($url));
