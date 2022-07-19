@@ -22,7 +22,7 @@ class CrawlManga extends Command
      *
      * @var string
      */
-    protected $signature = 'crawl:manga {source} {--cron} {--only_update} {--url=} {--max_page=1} {--min_page=1} {--save_image=1}';
+    protected $signature = 'crawl:manga {source} {--cron} {--only_update} {--url=} {--max_page=1} {--min_page=1} {--save_image=0}';
 
     /**
      * The console command description.
@@ -173,8 +173,6 @@ class CrawlManga extends Command
 
         $cover_name = $this->info['slug'] . '.jpg';
 
-
-
         $CrawlerCore = (new CrawlerCore())->crawler($sources);
 
         if (Storage::disk('cover_uploads')->exists($cover_name)) {
@@ -224,14 +222,16 @@ class CrawlManga extends Command
             }
         }
 
-        $chapters = Chapter::where('post_id', 'LIKE', $post->ID)
+        print_r($post->ID);
+        $chapters = Chapter::where('post_id', '=', $post->ID)
             ->get(['chapter_name', 'chapter_slug']);
+
+        $check_list = [];
 
         $chapter_index = ($chapters)->count();
 
         $this->comment(__(" -- found :x chapters", ['x' => count($this->info['list_chapter'])]));
 
-        $check_list = [];
         foreach ($chapters as $available_chap) {
             $check_list[] = Str::slug($available_chap->chapter_name);
         }
@@ -245,7 +245,7 @@ class CrawlManga extends Command
                 continue;
             }
 
-            $deepCheck = Chapter::query()->where('chapter_slug', Str::slug($chap['name']))->first('chapter_id');
+            $deepCheck = Chapter::query()->where('chapter_slug', Str::slug($chap['name']))->where('post_id', '=', $post->ID)->first('chapter_id');
             if ($deepCheck) {
                 $this->info(__("Exist - :chap", ['chap' => $chap['name']]));
                 continue;
@@ -318,7 +318,7 @@ class CrawlManga extends Command
 
             if (empty($content)) {
                 DB::rollBack();
-//                Chapter::query()->where('chapter_id', $chapter_id)->delete();
+                Chapter::query()->where('chapter_id', $chapter_id)->delete();
                 $this->alert("Xoá chap lỗi -- $chapter_id");
             } else {
                 if ((new CrawlerCore())->crawler($sources)->chapter_type !== 'text') {
