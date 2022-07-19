@@ -7,11 +7,11 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Boxnovel extends MadaraCore
 {
-    public $list_url = "https://boxnovel.com/";
+    public $list_url = "https://boxnovel.com/novel/page/%s/";
     public $referer = "https://boxnovel.com/";
     public $proxy = false;
     public $chapter_type = 'text';
-    
+
     function info($url)
     {
         $html = $this->minifier($this->curl($url));
