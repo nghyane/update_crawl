@@ -38,7 +38,7 @@ class Boxnovel extends MadaraCore
             }
         }
 
-        $data['cover'] = $crawler->filter(".summary_image img")->attr('src');
+        $data['cover'] = $crawler->filter(".summary_image img")->attr('data-src');
 
         $crawler->filter(".description-summary .summary__content a")->each(function (Crawler $crawler) {
             foreach ($crawler as $node) {
