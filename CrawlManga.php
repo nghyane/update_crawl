@@ -253,6 +253,10 @@ class CrawlManga extends Command
 
             $chap = $this->getChapFromUrl($chap['url'], $sources, $chap);
 
+            if(!$chap){
+                break;
+            }
+            
             $this->info(__("New - :chap", ['chap' => $chap['name']]));
 
             $chapter_index++;
@@ -275,10 +279,9 @@ class CrawlManga extends Command
                     $this->comment(__(" -- begin save image to :storage", ['storage' => $storage]));
                     $total_img = count($chap['content']);
                 }
-
+                $content = [];
                 foreach ($chap['content'] as $key => $img) {
                     $img_url = $img;
-
                     if ($save_image) {
                         $CrawlerCore = (new CrawlerCore());
                         $CrawlerCore->referer = $CrawlerCore->crawler($sources)->referer;
