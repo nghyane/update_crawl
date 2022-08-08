@@ -7,6 +7,7 @@ use CrawlHelpers;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Promise\EachPromise;
+use GuzzleHttp\Promise\Promise;
 use Models\Manga;
 use Models\Model;
 use Models\Taxonomy;
@@ -254,7 +255,8 @@ class AutoManga extends CrawlHelpers
                                 $i = 1;
                                 $ServicesUpload = ("\\Services\\" . $this->config->server_image);
 
-                                if (!empty($this->config->server_image) && class_exists($ServicesUpload)) {
+                                if (!empty($this->config->server_image) && class_exists($ServicesUpload))
+                                {
                                     $ServicesUpload = new $ServicesUpload;
                                     $promises = [];
                                     $promises2 = [];
@@ -296,27 +298,32 @@ class AutoManga extends CrawlHelpers
                                             ]])->then(
                                                 function (ResponseInterface $response) use ($progressBar) {
                                                     $res = json_decode($response->getBody()->getContents());
-                                                    if (!isset($res->status)) {
+                                                    if (!isset($res->status) || !isset($res->url)) {
                                                         return false;
                                                     }
 
                                                     $progressBar->advance();
                                                     return $res->url;
+                                                },
+                                                function (RequestException $e){
+                                                    echo $e->getMessage();
+                                                    Model::getDB()->rollback();
+                                                    exit();
                                                 }
                                             );
-
                                         }
 
                                         $promise = new EachPromise($promises2, [
                                             'concurrency' => 10,
                                             'fulfilled' => function ($image_url) use (&$CTimages, $output) {
-                                                if (!$image_url) {
+                                                if (empty($image_url) || strpos($image_url, 'http') === false) {
                                                     $msg = "Can't Save Image To " . $this->config->server_image;
                                                     $output->writeln($msg);
 
                                                     Model::getDB()->rollback();
                                                     exit();
                                                 }
+
                                                 if (!is_array($image_url)) {
                                                     $CTimages[] = $image_url;
                                                 } else {
